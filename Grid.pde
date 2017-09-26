@@ -11,7 +11,7 @@ class Grid {
   color sourceColor = color(255,0,0);
   color destColor = color(0, 0, 255);
   color nowColor = sourceColor;
-  float speed = 0.015;
+  float speed = 0.01;
   int strokeSize = 3;
 
   Grid(int _width, int _height) {
@@ -47,18 +47,15 @@ class Grid {
 
     ArrayList<Dot> inputDots = getNonBlankDots(input);
     ArrayList<Dot> outputDots = getNonBlankDots(output);
-    println(inputDots.size() + " " + outputDots.size());
        
-    if (inputDots.size() >=outputDots.size()) {
-      for (int i=0; i<outputDots.size(); i++) {
-        dots.add(getDot(inputDots.get(i), outputDots.get(i)));
-      }
-    } else {
-      for (int i=0; i<inputDots.size(); i++) {
-        dots.add(getDot(inputDots.get(i), outputDots.get(i)));
-      }
+    int iDotSize = inputDots.size();
+    int oDotSize = outputDots.size();
+    println(iDotSize + " " + oDotSize);
+
+    for (int i=0; i < oDotSize; i++) {
+      int iDotIndex = constrain(i, 0, iDotSize-1);
+      dots.add(getDot(inputDots.get(iDotIndex), outputDots.get(i)));
     }
-    
   }
   
   Dot getDot(Dot d1, Dot d2) {

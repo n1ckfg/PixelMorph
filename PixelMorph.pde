@@ -1,11 +1,11 @@
 Grid grid;
 int sW, sH;
-int scaleFactor = 6;
+int scaleFactor = 5;
 PFont font;
 int fontSize = 28;
 
 void setup() {
-  size(128, 128, P2D);
+  size(192, 108, P2D);
   
   sW = width;
   sH = height;
