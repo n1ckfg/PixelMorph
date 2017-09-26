@@ -11,7 +11,7 @@ class Grid {
   color sourceColor = color(255,0,0);
   color destColor = color(0, 0, 255);
   color nowColor = sourceColor;
-  float speed = 0.01;
+  float speed = 0.015;
   int strokeSize = 3;
 
   Grid(int _width, int _height) {
@@ -118,6 +118,17 @@ class Grid {
     tex.beginDraw();
     tex.background(0);
     tex.image(buffer, 0, 0, width, height);
+    tex.noStroke();
+    tex.fill(0, 80 + random(20));
+    tex.rect(0,0,width,height);
+    if (modeCounter == 2) {
+      for (int i=0; i<dots.size(); i++) {
+        Dot d = dots.get(i);
+        tex.stroke(d.pc);
+        tex.strokeWeight(strokeSize);
+        tex.point(d.p.x * scaleFactor, d.p.y * scaleFactor);
+      }
+    }
     tex.endDraw();
   }
   
