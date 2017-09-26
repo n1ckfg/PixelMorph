@@ -19,15 +19,7 @@ void setup() {
 void draw() {
   background(0);
   
-  if (grid.modeCounter < 2) {
-    if (mousePressed) {
-      grid.buffer.beginDraw();
-      grid.buffer.stroke(grid.nowColor);
-      grid.buffer.strokeWeight(10);
-      grid.buffer.line(mouseX/scaleFactor, mouseY/scaleFactor, pmouseX/scaleFactor, pmouseY/scaleFactor);
-      grid.buffer.endDraw();
-    } 
-  }
+
   
   grid.run();
 }

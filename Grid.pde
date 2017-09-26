@@ -62,7 +62,9 @@ class Grid {
         PVector t = new PVector(x, y);
         color pc = input.pixels[loc];
         color tc = output.pixels[loc];
-        dots.add(new Dot(p, t, pc, tc));
+        if (pc != blankColor) {
+          dots.add(new Dot(p, t, pc, tc));
+        }
       }
     }
   }
@@ -78,7 +80,15 @@ class Grid {
   }
     
   void update() {
-    if (modeCounter == 2 && grid.repCounter < grid.repMax) {
+    if (modeCounter < 2) {
+      if (mousePressed) {
+        buffer.beginDraw();
+        buffer.stroke(grid.nowColor);
+        buffer.strokeWeight(10);
+        buffer.line(mouseX/scaleFactor, mouseY/scaleFactor, pmouseX/scaleFactor, pmouseY/scaleFactor);
+        buffer.endDraw();
+      } 
+    } else if (modeCounter == 2 && repCounter < repMax) {
       for (int i=0; i<dots.size(); i++) {
         dots.get(i).run();
       }
