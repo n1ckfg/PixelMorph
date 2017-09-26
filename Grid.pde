@@ -6,11 +6,13 @@ class Grid {
   PGraphics buffer;
   int modeCounter = 0;
   int repCounter = 0;
-  int repMax = 200;
+  int repMax = 1000;
   color blankColor = color(0,0);
   color sourceColor = color(255,0,0);
   color destColor = color(0, 0, 255);
   color nowColor = sourceColor;
+  float speed = 0.01;
+  int strokeSize = 3;
 
   Grid(int _width, int _height) {
     gridWidth = _width;
@@ -30,10 +32,108 @@ class Grid {
       getOutput();
       modeCounter = 2;      
       clearBuffer();
-      importPix(input, output);
+      try {
+        importPix(input, output);
+      } catch (Exception e) {
+        init();
+      }
     } else if (grid.modeCounter == 2) {
       init();
     }
+  }
+  
+  void importPix(PImage input, PImage output) {
+    dots = new ArrayList<Dot>();
+
+    ArrayList<Dot> inputDots = getNonBlankDots(input);
+    ArrayList<Dot> outputDots = getNonBlankDots(output);
+    println(inputDots.size() + " " + outputDots.size());
+       
+    if (inputDots.size() >=outputDots.size()) {
+      for (int i=0; i<outputDots.size(); i++) {
+        dots.add(getDot(inputDots.get(i), outputDots.get(i)));
+      }
+    } else {
+      for (int i=0; i<inputDots.size(); i++) {
+        dots.add(getDot(inputDots.get(i), outputDots.get(i)));
+      }
+    }
+    
+  }
+  
+  Dot getDot(Dot d1, Dot d2) {
+    Dot d = new Dot();
+    d.p = d1.p;
+    d.pc = d1.pc;
+    d.t = d2.p;
+    d.tc = d2.pc;
+    d.s = speed;
+    return d;
+  }
+  
+  ArrayList<Dot> getNonBlankDots(PImage input) {
+    ArrayList<Dot> returns = new ArrayList<Dot>();
+    
+    for (int y = 0; y < input.height; y++) {
+      for (int x = 0; x < input.width; x++) {
+        int loc = x + (y * input.width);
+        PVector p = new PVector(x, y);
+        color pc = input.pixels[loc];
+        if (pc != blankColor) returns.add(new Dot(p, pc));
+      }
+    }    
+    
+    return returns;
+  }
+  
+  void exportPix() {
+    buffer.loadPixels();
+    for (int i=0; i<dots.size(); i++) {
+      Dot d = dots.get(i);
+      int loc = int(d.p.x + (d.p.y * gridWidth));
+      buffer.pixels[loc] = d.pc;
+    }
+    buffer.updatePixels();
+  }
+    
+  void update() {
+    if (modeCounter < 2) {
+      if (mousePressed) {
+        buffer.beginDraw();
+        buffer.stroke(grid.nowColor);
+        buffer.strokeWeight(strokeSize);
+        buffer.line(mouseX/scaleFactor, mouseY/scaleFactor, pmouseX/scaleFactor, pmouseY/scaleFactor);
+        buffer.endDraw();
+      } 
+    } else if (modeCounter == 2 && repCounter < repMax) {
+      for (int i=0; i<dots.size(); i++) {
+        dots.get(i).run();
+      }
+      exportPix();
+      repCounter++;
+    }
+  }
+    
+  void draw() {
+    tex.beginDraw();
+    tex.background(0);
+    tex.image(buffer, 0, 0, width, height);
+    tex.endDraw();
+  }
+  
+  void run() {
+    update();
+    draw();
+  }
+  
+  void clearBuffer() {
+    buffer.beginDraw();
+    buffer.loadPixels();
+    for(int i=0; i<buffer.pixels.length; i++) {
+      buffer.pixels[i] = blankColor;
+    }
+    buffer.updatePixels();
+    buffer.endDraw();
   }
   
   void init() {
@@ -53,123 +153,8 @@ class Grid {
     output.loadPixels();
   }
   
-  void importPix(PImage input, PImage output) {
-    dots = new ArrayList<Dot>();
-    for (int y = 0; y < gridHeight; y++) {
-      for (int x = 0; x < gridWidth; x++) {
-        int loc = x + (y * gridWidth);
-        PVector p = new PVector(x, y);
-        PVector t = new PVector(x, y);
-        color pc = input.pixels[loc];
-        color tc = output.pixels[loc];
-        if (pc != blankColor) {
-          dots.add(new Dot(p, t, pc, tc));
-        }
-      }
-    }
+  String logDotInfo(Dot d) {
+     return d.p + " " + d.pc + " " + d.t + " " + d.tc;
   }
   
-  void exportPix() {
-    buffer.loadPixels();
-    for (int i=0; i<dots.size(); i++) {
-      Dot d = dots.get(i);
-      int loc = int(d.p.x + (d.p.y * gridWidth));
-      buffer.pixels[loc] = d.pc;
-    }
-    buffer.updatePixels();
-  }
-    
-  void update() {
-    if (modeCounter < 2) {
-      if (mousePressed) {
-        buffer.beginDraw();
-        buffer.stroke(grid.nowColor);
-        buffer.strokeWeight(10);
-        buffer.line(mouseX/scaleFactor, mouseY/scaleFactor, pmouseX/scaleFactor, pmouseY/scaleFactor);
-        buffer.endDraw();
-      } 
-    } else if (modeCounter == 2 && repCounter < repMax) {
-      for (int i=0; i<dots.size(); i++) {
-        dots.get(i).run();
-      }
-      exportPix();
-      repCounter++;
-    }
-  }
-    
-  void draw() {
-    image(buffer, 0, 0, width, height);
-  }
-  
-  void run() {
-    update();
-    draw();
-  }
-  
-  void clearBuffer() {
-    buffer.beginDraw();
-    buffer.loadPixels();
-    for(int i=0; i<buffer.pixels.length; i++) {
-      buffer.pixels[i] = blankColor;
-    }
-    buffer.updatePixels();
-    buffer.endDraw();
-  }
-  
-  color[] getNonAlphaPixels(color[] input) {
-    IntList returnList = new IntList();
-    for (int i=0; i<input.length; i++) {
-      if (input[i] != blankColor) returnList.append(input[i]);
-    }
-    return returnList.array();
-  }
-  
-}
-
-// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-
-class Dot {
-
-  PVector p;
-  PVector t;
-  color pc, tc;
-  float s = 0.1;
-  
-  Dot() {
-    p = new PVector(width/2, height/2);
-    pc = tc = color(0);
-  }
-  
-  Dot(PVector _p, color _pc) {
-    p = _p;
-    pc = _pc;
-  }
-  
-  Dot(PVector _p, PVector _t, color _pc, color _tc) {
-    p = _p;
-    t = _t;
-    pc = _pc;
-    tc = _tc;
-  }
-  
-  Dot(PVector _p, PVector _t, color _pc, color _tc, float _s) {
-    p = _p;
-    t = _t;
-    pc = _pc;
-    tc = _tc;
-    s = _s;
-  }
-  
-  void run() {
-    float x = lerp(p.x, t.x, s);
-    float y = lerp(p.y, t.y, s);
-    float r = lerp(red(pc), red(tc), s);
-    float g = lerp(green(pc), green(tc), s);
-    float b = lerp(blue(pc), blue(tc), s);
-    float a = lerp(alpha(pc), alpha(tc), s);
-    
-    p = new PVector(x, y);
-    pc = color(r,g,b,a);
-  }
-
 }
